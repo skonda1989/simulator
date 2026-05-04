@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "Course": {
+      "title": "Course",
+      "description": "A learning course with multiple lessons",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "lessons": { "type": "array" },
+        "creatorId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isPublic": { "type": "boolean" }
+      },
+      "required": ["id", "title", "description", "lessons", "creatorId", "createdAt"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile and progress",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "points": { "type": "number" },
+        "completedLessons": { "type": "array" }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "firestore": {
+    "courses/{courseId}": {
+      "schema": "Course",
+      "description": "Global courses collection"
+    },
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User specific data"
+    }
+  }
+}

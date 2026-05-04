@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isCreator(courseData) {
+      return isSignedIn() && request.auth.uid == courseData.creatorId;
+    }
+
+    function isValidCourse(data) {
+      return data.id is string &&
+             data.title is string && data.title.size() <= 200 &&
+             data.description is string && data.description.size() <= 1000 &&
+             data.lessons is list &&
+             data.creatorId == request.auth.uid &&
+             data.createdAt == request.time;
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Progress
+    match /progress/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Courses
+    match /courses/{courseId} {
+      // Anyone can read a course if they have the ID
+      allow get: if true;
+      allow list: if isSignedIn(); // Only signed in users can list all courses
+
+      allow create: if isSignedIn() && isValidCourse(request.resource.data);
+      
+      allow update: if isCreator(resource.data) && 
+                      request.resource.data.creatorId == resource.data.creatorId &&
+                      request.resource.data.createdAt == resource.data.createdAt;
+      
+      allow delete: if isCreator(resource.data);
+    }
+  }
+}
